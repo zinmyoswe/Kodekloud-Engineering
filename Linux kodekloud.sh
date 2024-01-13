@@ -216,6 +216,7 @@ all Apps & DB servers.
 #checking
 ls -l /home/thor/nautilus_banner
 
+#scp is security copy
 scp -r /home/thor/nautilus_banner tony@stapp01:/tmp
 scp -r /home/thor/nautilus_banner steve@stapp02:/tmp
 scp -r /home/thor/nautilus_banner banner@stapp03:/tmp
@@ -233,4 +234,33 @@ ssh tony@stapp01
 
 #For only dbserver
 sudo yum install openssh-clients-y
+
+####################################### Linux Find Command ###############
+a. On App Server 2 at location /var/www/html/ecommerce find out all files (not directories) having .php extension.
+
+b. Copy all those files along with their parent directory structure to location /ecommerce on same server.
+
+c. Please make sure not to copy the entire /var/www/html/ecommerce directory content.
+
+find: The command used for searching files and directories.
+
+/var/www/html/ecommerce: The starting directory for the search.
+-type f: Specifies that only files should be considered, not directories.
+-name '*.php': Filters files based on the name, looking for files with the ".php" extension.
+-exec cp --parents {} /ecommerce \;: For each file found, execute the cp command with the --parents option to copy the file to the "/beta" directory
+while preserving its original directory structure.
+
+#checking content
+ls -l /ecommerce 
+
+#finding file
+find /var/www/html/ecommerce -type f -name '*.php'
+
+#checking count
+find /var/www/html/ecommerce -type f -name '*.php' | wc -l
+
+find /var/www/html/ecommerce -type f -name '*.php' -exec cp --parents {} /ecommerce \; 
+
+#validate
+ls -l /ecommerce 
 
