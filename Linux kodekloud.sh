@@ -264,3 +264,33 @@ find /var/www/html/ecommerce -type f -name '*.php' -exec cp --parents {} /ecomme
 #validate
 ls -l /ecommerce 
 
+
+####################################### Install Anisible ###############
+Install ansible version 2.6.10 on Jump host.
+
+To Install specific ansible version, required ansible repo ( refer below video)
+
+ansible --version
+
+vi /etc/yum.repos.d/ansible.repo
+
+[ansible]
+
+name=Ansible RPM repository for Enterprise Linux 7 - $basearch
+
+baseurl=https://releases.ansible.com/ansible/rpm/release/epel-7-$basearch/
+
+enabled=1
+
+gpgcheck=1
+
+gpgkey=https://releases.ansible.com/keys/RPM-GPG-KEY-ansible-release.pub
+
+#check 
+cat ansible.repo 
+
+yum install ansible 4.10.0 
+OR
+sudo pip3 install "ansible==4.10.0"
+
+ansible --version
