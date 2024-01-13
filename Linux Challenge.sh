@@ -382,7 +382,7 @@ vi container-start.sh
 #!/bin/bash
 
 sudo docker start myapp
-echo "myapp container started"
+echo "myapp container started!"
 
 vi container-stop.sh
 sudo docker stop myapp

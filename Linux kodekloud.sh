@@ -200,7 +200,37 @@ nfsuser hard nproc 2027
 cat /etc/security/limits.conf | grep nproc | grep -v ^#
 
 
+------------------#######################################
 
+----------------- Linux Level II ------------------------
 
+------------------#######################################
 
+####################################### Linux Banner ###############
+Update the message of the day on all application and db servers for Nautilus. 
+Make use of the approved template located at '/tmp/nautilus_banner' on jump host
+
+1.  Copy the '/tmp/nautilus_banner' using scp command from jumpserver to  
+all Apps & DB servers.
+
+#checking
+ls -l /home/thor/nautilus_banner
+
+scp -r /home/thor/nautilus_banner tony@stapp01:/tmp
+scp -r /home/thor/nautilus_banner steve@stapp02:/tmp
+scp -r /home/thor/nautilus_banner banner@stapp03:/tmp
+scp -r /home/thor/nautilus_banner peter@stdb01:/tmp
+
+-r: Recursively copy entire directories.
+
+ssh tony@stapp01
+sudo su -
+
+mv /home/thor/nautilus_banner /etc/motd
+
+#checking
+ssh tony@stapp01
+
+#For only dbserver
+sudo yum install openssh-clients-y
 
