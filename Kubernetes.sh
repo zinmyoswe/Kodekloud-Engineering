@@ -1,3 +1,6 @@
+Kubernetes namespace CRUD
+https://kodekloud.com/blog/kubectl-create-namespace/
+
 ######################################## Create Pods in Kubernetes Cluster ###############################
 A Kubernetes pod is a collection of one or more Linux® containers, and is the smallest unit of a Kubernetes application. 
 

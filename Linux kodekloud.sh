@@ -296,5 +296,28 @@ sudo pip3 install "ansible==4.10.0"
 ansible --version
 
 ####################################### Install a package ###############
+install the zip package on all app-servers.
+
 check &  install zip package
 
+The command rpm -qa | grep zip is used on Linux systems to list all installed RPM packages that contain the term "zip" in their names. 
+This is useful for finding information about installed packages related to ZIP compression.
+
+Heres a breakdown of the command:
+
+rpm: This is the 'package manager command' on Red Hat-based Linux systems (like CentOS, Fedora, and Red Hat Enterprise Linux).
+-qa: Query all installed packages.
+|: Pipe symbol is used to send the output of the first command as input to the second.
+grep zip: This part filters the list of installed packages to only show those containing the term "zip" in their names.
+
+rpm -qa |grep epel-release
+yum install epel-release -y
+
+#validate
+rpm -qa |grep epel-release
+
+ssh -t steve@stapp02 "sudo yum install epel-release -y "
+ssh -t steve@stapp02 "sudo rpm -qa |grep epel-release "
+
+ssh -t banner@stapp03 "sudo yum install epel-release -y "
+ssh -t banner@stapp03 "sudo rpm -qa |grep epel-release "
