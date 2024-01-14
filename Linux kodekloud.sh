@@ -332,3 +332,17 @@ yum install cups -y
 
 systemctl enable --now cups
 systemctl status cups
+
+####################################### Linux Configure Sudo ###############
+#Check user is existing & have sudo permission
+id mariyam
+su - mariyam
+sudo cat /etc/sudoers | grep mariyam
+
+#switch to root and provide sudo permission without a password 
+logout
+visudo
+mariyam    ALL=(ALL)   NOPASSWD:ALL
+
+su - mariyam
+sudo cat/etc/sudoers | grep mariyam
