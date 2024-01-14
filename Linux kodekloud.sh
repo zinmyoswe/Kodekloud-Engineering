@@ -321,3 +321,14 @@ ssh -t steve@stapp02 "sudo rpm -qa |grep epel-release "
 
 ssh -t banner@stapp03 "sudo yum install epel-release -y "
 ssh -t banner@stapp03 "sudo rpm -qa |grep epel-release "
+
+####################################### Linux Service ###############
+Requirement 
+a. Install cups package on all the application servers.
+
+b. Once installed, make sure it is enabled to start during boot.
+
+yum install cups -y
+
+systemctl enable --now cups
+systemctl status cups
