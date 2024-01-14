@@ -43,7 +43,7 @@ kubectl get pods
 #waiting for pods running status
 kubectl get pods
 
-######################################## CCreate Deployments in Kubernetes Cluster ###############################
+######################################## Create Deployments in Kubernetes Cluster ###############################
 Task => Create a deployment named nginx to deploy the application nginx using the image nginx: latest (remember to mention the tag as well) 
 
 
@@ -78,6 +78,30 @@ cat >deploy.yml
 k apply -f deploy.yml
 k get deploy
 k get pods
+
+######################################## Create Namespaces in Kubernetes Cluster ###############################
+Create a namespace named 'dev' and create a POD under it; 
+name the pod 'dev-nginx-pod' and use nginx image with latest tag only and 
+remember to mention tag i.e 'nginx:latest'.
+
+kubectl get namespace
+
+kubectl get pods -n dev
+
+kubectl create namespace dev
+
+kubectl get namespace
+
+#create a pod
+kubectl run dev-nginx-pod --image=nginx:latest -n dev
+
+-n dev: This specifies the namespace in which to create the pod.
+ The pod will be created in the "dev" namespace.
+ 
+kubectl get pods -n dev
+
+kubectl describe pod dev-nginx-pod -n dev
+
 
 
 

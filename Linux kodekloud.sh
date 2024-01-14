@@ -294,3 +294,7 @@ OR
 sudo pip3 install "ansible==4.10.0"
 
 ansible --version
+
+####################################### Install a package ###############
+check &  install zip package
+
