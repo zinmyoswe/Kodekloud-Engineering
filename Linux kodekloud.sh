@@ -160,13 +160,14 @@ systemctl enable Firewalld
 systemctl status Firewalld
 
 #Allow the nginx port
+firewall-cmd --permanent --zone=public --add-port=80/tcp
 firewall-cmd --permanent --zone=public --add-port=8096/tcp
 
 #Allow services http & https port 
 firewall-cmd --permanent --zone=public --add-service={http,https}
 
 #Allow the Apache http  port  with LB host IP
-firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address=172.16.238.14 port protocol=tcp port=8083 accept'
+firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address=172.16.238.14 port protocol=tcp port=8080 accept'
 
 #run and validate
 systemctl enable nginx && systemctl status nginx
@@ -346,3 +347,33 @@ mariyam    ALL=(ALL)   NOPASSWD:ALL
 
 su - mariyam
 sudo cat/etc/sudoers | grep mariyam
+
+####################################### Linux Firewalld Setup- Apache & Nginx server Update###############
+Install Firewalld (if not already installed):
+
+sudo yum install -y firewalld    # For CentOS/RHEL
+# or
+sudo apt-get install -y firewalld    # For Debian/Ubuntu
+Start and Enable Firewalld:
+
+
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+
+#Allow All Incoming Connections on Nginx port (80):
+sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
+
+#Block All Incoming Connections on Apache port (8080):
+sudo firewall-cmd --zone=public --remove-port=8080/tcp --permanent
+
+
+#Reload Firewalld for Changes to Take Effect:
+sudo firewall-cmd --reload
+
+
+#Ensure Apache and Nginx Services are Running:
+# Start Apache (if not already running)
+sudo systemctl start httpd
+
+# Start Nginx (if not already running)
+sudo systemctl start nginx
