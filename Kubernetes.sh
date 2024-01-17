@@ -18,23 +18,14 @@ YAML is writing configuration files
 #yaml file
 
 apiVersion: v1
-
 kind: Pod
-
 metadata:
-
     name: pod-httpd
-
     labels:
-
       app: httpd_app
-
 spec:
-
     containers:
-
     - name: httpd-container
-
       image: httpd:latest
       
       
@@ -142,7 +133,105 @@ kubectl get pods
 
 kubectl describe pods httpd-pod
 
+######################################## rolling updates in kubernetes ###############################
+#what is rolling updates in kubernetes
+Overview. You can perform a rolling update to update the images, configuration, labels, annotations, and resource limits/requests of the workloads in your clusters.
+Rolling updates incrementally replace your resource s Pods with new ones, which are then scheduled on nodes with available resources.
+
+Question : There is a production deployment planned for next week. The Nautilus DevOps team wants to test the deployment update and rollback on Dev environment first so that they can identify the risks in advance. Below you can find more details about the plan they want to execute.
+
+Create a namespace 'xfusion'. Create a deployment called 'httpd-deploy' under this new namespace, 
+It should have one container called 'httpd', use 'httpd:2.4.25' image and 6 replicas. 
+The deployment should use RollingUpdate strategy with maxSurge=1, and maxUnavailable=2.
+
+Next upgrade the deployment to version httpd:2.4.43 using a rolling update.
+
+Finally, once all pods are updated undo the update and roll back to the previous/original version.
+
+#checking namespace and deployment is exist or not
+kubectl get namespace
+kubectl get deployment -n xfusion
+
+vi /tmp/httpd.yaml
+
+kubectl create namespace xfusion
+
+kubectl get namespace
+#Create yaml  file with all the parameters
 
 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: xfusion
+spec:
+  replicas: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.19
+		  
+		  
 
+		  
+
+		  
+		  
+maxSurge=1:
+This specifies the maximum number of additional pods that can be created beyond the desired number of replicas during an update. 
+In this case, it allows only one additional pod to be created at a time.
+
+maxUnavailable=2:
+This specifies the maximum number of pods that can be unavailable (not running) during the update. 
+In this case, it allows up to two pods to be unavailable at any given time.
+
+
+#create pod
+kubectl apply -f /tmp/httpd.yaml --namespace=xfusion
+
+#Wait for  pods to get running status
+kubectl get pods -n xfusion
+kubectl get deployment -n xfusion -o wide
+
+#Perform  rolling update by running below command
+kubectl set image deployment/httpd-deploy httpd-httpd:2.4.43 --namespace xfusion --record=true
+
+#validate rollback is success or not
+kubectl get pods -n xfusion
+kubectl get deployment -n xfusion -o wide
+
+#Rollback the deployment as per task  
+kubectl rollout status deployment httd-deploy n -xfusion
+kubectl rollout history deployment httd-deploy n -xfusion
+kubectl rollout undo deployment httd-deploy n -xfusion
+kubectl rollout status deployment httd-deploy n -xfusion
+
+#validate rollback is success or not again
+kubectl get pods -n xfusion
+kubectl get deployment -n xfusion -o wide
+
+'Another Way'
+
+kubectl set image deployment/nginx-deployment nginx=nginx:1.19 --record=true
+
+kubectl get deployment nginx-deployment -o=jsonpath='{.spec.template.spec.containers[*].name}'
+kubectl get deployment nginx-deployment -o yaml
+kubectl set image deployment/nginx-deployment <container-name>=nginx:1.19 --record
+
+kubectl set image deployment/nginx-deployment nginx-container=nginx:1.19 --record
+kubectl rollout status deployment/nginx-deployment
+kubectl describe deployment nginx-deployment
 
