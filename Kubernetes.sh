@@ -274,6 +274,25 @@ kubectl create -f /tmp/httpd.yaml
 # pods to get running status
 kubectl get pods
 
+######################################## Create Cronjobs in Kubernetes ###############################
+#check the existing pod & cronjob
+kubectl get pod
+kubectl get cronjob
+
+vi /tmp/cron.yml
+cat /tmp/cron.yml
+
+#create a pod
+kubectl create -f /tmp/cron.yml
+
+#validate
+kubectl get cronjob
+kubectl get pod
+kubectl get pods -o wide
+
+#checking pod name logs
+kubectl logs nautilus-1627054320-f6xl6
+
 
 
 
