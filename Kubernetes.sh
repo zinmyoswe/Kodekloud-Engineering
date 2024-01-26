@@ -260,6 +260,20 @@ kubectl get pods
 
 kubectl rollout status deployment nginx-deployment
 
+######################################## Create Replicaset in Kubernetes Cluster ###############################
+
+kubectl get deploy
+kubectl get services
+
+vi /tmp/httpd.yaml
+cat /tmp/httpd.yaml
+
+#create pod
+kubectl create -f /tmp/httpd.yaml
+
+# pods to get running status
+kubectl get pods
+
 
 
 

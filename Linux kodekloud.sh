@@ -377,3 +377,88 @@ sudo systemctl start httpd
 
 # Start Nginx (if not already running)
 sudo systemctl start nginx
+
+####################################### Linux Postfix Mail Server###############
+ Question: xFusionCorp Industries has planned to set up a common email server in Stork DC. After several meetings and recommendations, 
+ they have decided to use postfix as their mail transfer agent and dovecot as an IMAP/POP3 server. We would like you to perform the following steps:
+ Install and configure postfix on Stork DC mail server.
+
+Create an email account ammar@stratos.xfusioncorp.com identified by B4zNgHA7Ya.
+Set its mail directory to '/home/ammar/Maildir'.
+Install and configure dovecot on the same server.
+
+login to mail server
+
+#checking mail server is exist or not
+rpm -qa | grep postfix
+rpm -qa | grep devecot
+
+yum install -y postfix
+
+
+vi /etc/postfix/main.cf
+remove #
+myhostname = virtual.domain.tld
+
+:set nu
+
+myhostname = stmail01.stratos.xfusioncorp.com
+
+remove #
+mydoamin = stratos.xfusioncorp.com
+
+remove # 99
+
+myorigin = $mydomain
+
+116 add#
+inet_interfaces = localhost
+
+113 remove#
+inet_interfaces = all
+
+164 add #
+165 remove #
+
+264
+mynetworks = 172.16.238.0/24,127.0.0.0/8
+
+419 remove #
+home_mailbox = Maildir/
+
+:wq!
+
+yum install -y devecot
+systemctl start postfix
+systemctl status postfix
+
+useradd ammar
+passwd ammar
+paste password
+
+cat /etc/passwd | grep ammar
+
+ls -a /home/ammar/Maildir
+telnet stmail01 25
+
+EHLO localhost
+
+mail from:ammar@stratos.xfusioncorp.com
+
+rcpt to:ammar@stratos.xfusioncorp.com
+
+DATA
+test mail
+.
+quit
+mailq
+su - ammar
+mailq
+ll
+cd Maildir/
+ll
+cat new/16+tab
+
+exit
+
+yum install dovecot -y
