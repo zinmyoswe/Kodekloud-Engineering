@@ -293,7 +293,19 @@ kubectl get pods -o wide
 #checking pod name logs
 kubectl logs nautilus-1627054320-f6xl6
 
+######################################## countdown job in kubernetes ###############################
 
+kubectl get services
+kubectl get pods
+
+vi /tmp/devops.yaml
+
+#create pods
+kubectl create -f /tmp/devops.yaml
+
+kubectl get pods
+
+kubectl logs <pods-name>
 
 
 
