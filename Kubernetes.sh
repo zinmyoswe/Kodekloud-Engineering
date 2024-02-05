@@ -635,3 +635,86 @@ kubectl create -f /tmp/webserver.yaml
 #validate
 kubectl get pods
 kubectl describe pods
+
+######################################## Deploy Nginx Web Server on Kubernetes Cluster ##########
+kubectl get namespace
+kubectl get pods
+
+vi /tmp/nginx.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: NodePort
+  selector:
+    app: nginx-app
+    type: front-end
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30011
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx-app
+    type: front-end
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-app
+      type: front-end
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+        type: front-end
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+
+kubectl create -f /tmp/nginx.yml
+kubectl get pods
+
+#validate
+kubectl exec <pod-name> -- curl http://localhost
+######################################## differnce between pods and deployment  ##########
+
+In this simplified representation, the "Deployment" encapsulates a "ReplicaSet," and the "ReplicaSet" manages multiple "Pods," each hosting one or more containers.
+ The "Pods" directly contain and run the application containers.
+
+  +---------------------+
+  |      Deployment     |
+  |                     |
+  |  +---------------+  |
+  |  | ReplicaSet    |  |
+  |  |               |  |
+  |  | +-----------+ |  |
+  |  | |   Pods    | |  |
+  |  | |           | |  |
+  |  | | +-------+ | |  |
+  |  | | | Pod   | | |  |
+  |  | | +-------+ | |  |
+  |  | +-----------+ |  |
+  |  +---------------+  |
+  +---------------------+
+
+  +---------------------+
+  |        Pods         |
+  |                     |
+  |  +---------------+  |
+  |  | Container 1  |  |
+  |  +---------------+  |
+  |  +---------------+  |
+  |  | Container 2  |  |
+  |  +---------------+  |
+  |  +---------------+  |
+  |  | Container 3  |  |
+  |  +---------------+  |
+  +---------------------+
