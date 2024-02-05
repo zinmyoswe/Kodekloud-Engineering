@@ -307,6 +307,331 @@ kubectl get pods
 
 kubectl logs <pods-name>
 
+######################################## Kubernetes Time Check Pod ###############################
+
+
+kubectl get namespace
+kubectl get pods
+
+kubectl create namespace xfusion
+
+vi /tmp/time.yaml
+cat /tmp/time.yaml
+
+apiVersion: v1
+
+kind: ConfigMap
+
+metadata:
+
+  name: time-config
+
+  namespace: xfusion
+
+data:
+
+  TIME_FREQ: "4"
+
+---
+
+apiVersion: v1
+
+kind: Pod
+
+metadata:
+
+  name: time-check
+
+  namespace: xfusion
+
+  labels:
+
+    app: time-check
+
+spec:
+
+  volumes:
+
+    - name: log-volume
+
+      emptyDir: {}
+
+  containers:
+
+    - name: time-check
+
+      image: busybox:latest
+
+      volumeMounts:
+
+        - mountPath: /opt/itadmin/time
+
+          name: log-volume
+
+      envFrom:
+
+        - configMapRef:
+
+            name: time-config
+
+      command: ["/bin/sh", "-c"]
+
+      args:
+
+        [
+
+          "while true; do date; sleep $TIME_FREQ;done > /opt/itadmin/time/time-check.log",
+
+        ]
+
+kubectl create -f /tmp/time.yaml
+kubectl get pods -n xfusion
+
+######################################## Troubleshoot Issue With Pods ###############################
+
+kubectl get pods
+
+kubectl describe pod webserver
+
+kubectl edit pod webserver
+
+kubectl get pods
+
+######################################## Update an Existing Deployment in Kubernetes ###############################
+
+
+kubectl get deploy
+
+#checking existing service to edit
+kubectl get service
+
+#checking existing deployment to edit
+kubectl get pod
+
+
+kubectl edit service nginx-service
+
+kubectl get service
+
+kubectl edit deploy nginx-deployment
+
+kubectl get deploy
+
+# check the running status
+kubectl get pods
+
+#Wait for  deployment & pods to get ready & running status
+kubectl get deploy
+
+kubectl get pods
+
+######################################## Replication Controller in Kubernetes ###############################
+
+kubectl get namespace
+
+kubectl get pod
+
+vi /tmp/replica.yaml
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: httpd-replicationcontroller
+  labels:
+    app: httpd_app
+    type: front-end
+spec:
+  replicas: 3
+  selector:
+    app: httpd_app
+  template:
+    metadata:
+      name: httpd_pod
+      labels:
+        app: httpd_app
+        type: front-end
+    spec:
+      containers:
+        - name: httpd-container
+          image: httpd:latest
+          ports:
+            - containerPort: 80		
+
+#create pods
+kubectl create -f /tmp/replica.yaml
+
+kubectl get pods
+
+#Validate the task
+kubectl exec <pod-name>  -- curl http://localhost
+
+######################################## vloume mount in Kubernetes ##########
+#The kubectl get configmap command is used to retrieve information about ConfigMaps in a Kubernetes cluster. 
+#ConfigMaps in Kubernetes are used to store configuration data in key-value pairs, which can be consumed by pods or other resources in the cluster.
+
+kubectl get pods
+
+kubectl get configmap
+
+kubectl describe configmap nginx-config
+
+#-o yaml: This flag specifies the output format as YAML.
+
+
+kubectl get configmap nginx-config -o yaml
+
+#checking optional (no need)
+kubectl cp /tmp/index.php nginx-phpfpm:/var/www/html -c nginx-container
+
+#checking wrong path ‘/usr/share/nginx/html’
+kubectl describe pod/nginx-phpfpm -n default
+
+kubectl get pod nginx-phpfpm -o yaml  > /tmp/nginx.yaml
+ls /tmp/nginx.yaml
+
+#Edit the nginx.yaml file and changed ‘/usr/share/nginx/html’ to ‘/var/www/html’ in 3 places. 
+cat /tmp/nginx.yaml |grep /usr/share/nginx/html
+
+#in mountPath
+vi /tmp/nginx.yaml
+
+cat /tmp/nginx.yaml
+
+#Post changes the mount path run below command to replace the running pods
+kubectl replace -f /tmp/nginx.yaml --force
+
+kubectl get pods
+
+#validate
+kubectl describe pod/nginx-phpfpm -n default
+
+ll /home/thor/
+
+ls
+
+cat index.php
+
+kubectl cp index.php nginx-phpfpm:/index.php -c nginx-container
+
+kubectl exec -it nginx-phpfpm -c nginx-container  -- /bin/bash
+
+ls -al
+
+cp index.php /var/www/html
+cd /var/www/html
+ls
+cat index.php
 
 
 
+
+
+
+
+
+
+#####################################################################
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+//*-------------- Level 2 ---------------------------------------*//
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+#####################################################################
+
+
+######################################## Kubernetes Shared Volumes ##########
+
+kubectl get service
+kubectl get pod
+
+vi /tmp/volume.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-share-nautilus
+  labels:
+    name: myapp
+spec:
+  volumes:
+    - name: volume-share
+      emptyDir: {}
+  containers:
+    - name: volume-container-nautilus-1
+      image: centos:latest
+      command: ["/bin/bash", "-c", "sleep 10000"]
+      volumeMounts:
+        - name: volume-share
+          mountPath: /tmp/media
+    - name: volume-container-nautilus-2
+      image: centos:latest
+      command: ["/bin/bash", "-c", "sleep 10000"]
+      volumeMounts:
+        - name: volume-share
+          mountPath: /tmp/games
+
+
+# create a pods
+kubectl create -f /tmp/volume.yaml
+
+kubectl get pods
+
+kubectl exec -it volume-share-nautilus -c vloume-container-nautilus-01 -- /bin/bash
+
+cd /tmp/media
+touch media.txt
+
+exit
+
+kubectl exec -it volume-share-nautilus -c vloume-container-nautilus-02 -- /bin/bash
+
+cd /tmp/games
+touch media.txt
+
+######################################## Kubernetes Sidecar containers ##########
+what is it?=> Sidecar containers work alongside the main container, extending its functionality and providing additional services.
+
+why use =>A sidecar container can handle data synchronization tasks, keeping the data in the primary container(s) in sync with external databases or services. 
+It can replicate data across multiple primary container instances to ensure consistency and availability.
+
+kubectl get services
+
+kubectl get pods
+
+vi /tmp/webserver.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webserver
+  labels:
+    name: webserver
+spec:
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+    - name: sidecar-container
+      image: ubuntu:latest
+      command:
+        [
+          "/bin/bash",
+          "-c",
+          "while true; do cat /var/log/nginx/access.log /var/log/nginx/error.log; sleep 30; done",
+        ]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx 	
+
+
+#Run the below command to create a pod
+kubectl create -f /tmp/webserver.yaml
+
+#validate
+kubectl get pods
+kubectl describe pods
