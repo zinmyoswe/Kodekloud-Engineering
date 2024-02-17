@@ -718,3 +718,364 @@ In this simplified representation, the "Deployment" encapsulates a "ReplicaSet,"
   |  | Container 3  |  |
   |  +---------------+  |
   +---------------------+
+
+######################################## Print Environment Variables ##########
+
+kubectl get pods
+
+vi /tmp/env.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: print-envars-greeting
+  labels:
+    name: print-envars-greeting
+spec:
+  restartPolicy: Never
+  containers:
+    - name: print-env-container
+      image: bash
+      env:
+        - name: GREETING
+          value: "Welcome to"
+        - name: COMPANY
+          value: "Stratos"
+        - name: GROUP
+          value: "Datacenter"
+      command: ["/bin/sh", "-c", 'echo "$(GREETING) $(COMPANY) $(GROUP)"']
+
+
+#pod create
+kubectl create -f /tmp/env.yml
+
+#validate
+kubectl get pods
+#see the greeting message
+kubectl logs <pod-name>
+
+######################################## difference of namespace and deployment ##########
+                            +-------------------------+
+                            |     Kubernetes Cluster  |
+                            |-------------------------|
+                            |         Node 1          |
+                            |-------------------------|
+                            |         Node 2          |
+                            |-------------------------|
+                            |         Node N          |
+                            +------------+------------+
+                                         |
+                               +---------+----------+
+                               |   Namespaces        |
+                               |---------------------|
+                               |      Namespace 1    |
+                               |---------------------|
+                               |      Namespace 2    |
+                               |---------------------|
+                               |      Namespace N    |
+                               +---------+----------+
+                                         |
+                            +------------+-----------+
+                            |       Deployments       |
+                            |-------------------------|
+                            |   Deployment 1          |
+                            |-------------------------|
+                            |   Deployment 2          |
+                            |-------------------------|
+                            |   Deployment N          |
+                            +-------------------------+
+
+Kubernetes cluster consists of nodes running Kubernetes components.
+Namespaces provide logical isolation within the cluster.
+Deployments manage the lifecycle of application pods within namespaces, ensuring desired state and handling updates.
+
+######################################## Rolling Updates And Rolling Back Deployments in Kubernetes ##########
+
+kubectl get namespace
+
+kubectl create namespace xfusion
+
+vi /tmp/httpd.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpd-deploy
+  namespace: devops
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 2
+  selector:
+    matchLabels:
+      app: httpd
+  template:
+    metadata:
+      labels:
+        app: httpd
+    spec:
+      containers:
+        - name: httpd
+          image: httpd:2.4.25
+---                                                                                                           
+apiVersion: v1                                                                                                
+kind: Service                                                                                                 
+metadata:                                                                                                     
+  name: httpd-service  
+  namespace: devops  
+spec:                                                                                                         
+   type: NodePort                                                                                             
+   selector:                                                                                                  
+     app: httpd                                                                                     
+   ports:                                                                                                     
+     - port: 80                                                                                               
+       targetPort: 80                                                                                         
+       nodePort: 30008
+
+		  
+#create pods under namespace
+kubectl create -f /tmp/httd.yaml --namespace=xfusion
+
+kubectl get pods -n xfusion
+kubectl get deployment -n xfusion
+
+#rolling update by running below command
+kubectl set image deployment httpd-deploy httpd=httpd:2.4.43 --namespace xfusion --record=true
+
+#Rollback the deployment as per tasks
+kubectl rollout undo deployment httpd-deploy -n xfusion
+
+#validate
+kubectl rollout status deployment httpd-deploy -n xfusion
+kubectl get pods -n xfusion
+kubectl get deployment -n xfusion -o wide
+kubectl describe deploy httpd-deploy -n xfusion
+
+
+######################################## Deploy Jenkins on Kubernetes ##########
+
+why=> Deploy Jenkins on Kubernetes
+Kubernetes ability to orchestrate container deployment ensures that Jenkins always has the right amount of resources available. 
+Hosting Jenkins on a Kubernetes Cluster is beneficial for Kubernetes-based deployments and dynamic container-based scalable Jenkins agents.
+
+what is => Jenkins on Kubernetes
+Jenkins on Kubernetes is the integration of the Jenkins automation server with the Kubernetes container orchestration platform. 
+This combination streamlines the deployment, scaling, and management of Jenkins instances and build environments.
+
+Advantages => of scaling Jenkins on Kubernetes
+If your build or your agent gets corrupted, you no longer need to worry — Jenkins will remove the unhealthy instance and spin up a new one.
+
+kubectl get namespace
+kubectl get service
+
+kubectl create namespace jenkins
+
+vi /tmp/jenkins.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  namespace: jenkins
+spec:
+  type: NodePort
+  selector:
+    app: jenkins
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30008
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  namespace: jenkins
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+        - name: jenkins-container
+          image: jenkins/jenkins
+          ports:
+            - containerPort: 8080
+			
+			
+#create pod
+kubectl create -f /tmp/jenkins.yaml
+
+#Wait for deployment & pods to get running status
+kubectl get deployment -n jenkins
+kubectl get pod -n jenkins
+kubectl get service -n jenkins
+
+#Validate the task by curl or open the browser by clicking 'Open Port on Host 1'
+kubectl exec <deployment-name> -n jenkins -- curl http://localhost:8080
+
+#for login jerkin
+kubectl exec <deployment-name> -n jenkins -- cat /var/jenkins_home/secrets/initialAdminPassword
+
+######################################## Deploy Grafana on Kubernetes Cluster ##########
+why => Deploy Grafana on Kubernetes Cluster
+Grafana provides a powerful interface for creating and visualizing dashboards, connecting to various data sources, and setting up alerts and notifications. 
+Using Helm to provision Grafana on a Kubernetes cluster simplifies the deployment process and allows for easy customization and management.
+
+
+Why use Kubernetes Monitoring in Grafana Cloud?
+Accelerate time to value. Reduce deployment, setup, and troubleshooting time with this ready-to-use monitoring tool that only requires running a few CLI commands or adding some small changes to your Helm chart.
+Identify root causes faster. ...
+Reduce costs.
+
+kubectl get pods
+kubectl get services
+
+vi /tmp/grafana.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service-nautilus
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 32000
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment-nautilus
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana-container-nautilus
+          image: grafana/grafana:latest
+          ports:
+            - containerPort: 3000
+			
+			
+kubectl create -f /tmp/grafana.yaml
+kubectl get service
+kubectl get pods
+
+######################################## Deploy Tomcat App on Kubernetes ##########
+kubectl create namespace tomcat-namespace-xfusion
+vi /tmp/tomcat.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-service-xfusion
+  namespace: tomcat-namespace-xfusion
+spec:
+  type: NodePort
+  selector:
+    app: tomcat
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+      nodePort: 32227
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomcat-deployment-xfusion
+  namespace: tomcat-namespace-xfusion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomcat
+  template:
+    metadata:
+      labels:
+        app: tomcat
+    spec:
+      containers:
+        - name: tomcat-container-xfusion
+          image: gcr.io/kodekloud/centos-ssh-enabled:tomcat
+          ports:
+            - containerPort: 8080
+
+
+kubectl create -f /tmp/tomcat.yaml
+
+kubectl get pods -n tomcat-namespace-xfusion
+kubectl get service
+kubectl get deploy -n tomcat-namespace-xfusion
+
+kubectl exec <pod-name> -n tomcat-namespace-xfusion -- curl http://localhost:8080
+
+######################################## Deploy Node App on Kubernetes ##########
+
+vi /tmp/node.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeapp-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodeapp
+  template:
+    metadata:
+      labels:
+        app: nodeapp
+    spec:
+      containers:
+      - name: nodeapp
+        image: gcr.io/kodekloud/centos-ssh-enabled:node
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodeapp-service
+spec:
+  type: NodePort
+  selector:
+    app: nodeapp
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30012
+
+
+
+kubectl apply -f /tmp/node.yaml
+
+kubectl get pods 
+kubectl get service 
+kubectl get deploy 
+
