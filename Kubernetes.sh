@@ -1075,7 +1075,121 @@ spec:
 
 kubectl apply -f /tmp/node.yaml
 
-kubectl get pods 
+kubectl get pods
 kubectl get service 
 kubectl get deploy 
 
+######################################## Troubleshoot Deployment issues in Kubernetes ##########
+
+kubectl get deployment
+kubectl get pods
+kubectl get configmap
+
+kubectl describe deployment
+kubectl describe configmap
+
+#can be seen redis-cofig not found, so, we change redis-cofig to redis-config
+kubectl describe pods
+
+kubectl edit deployment
+
+#search
+#pressing / and then typing your search pattern/word.
+/cofig
+change 'cofig' to 'config'
+
+/alphin
+change 'alphin' to 'alpine'
+
+
+#validation
+#be sure running in pods and ready in deployment
+kubectl get deployment
+kubectl get pods
+
+######################################## Kubernetes Level 2 - Task 11 - Fix issue with LAMP Environment in Kubernetes##########
+
+
+
+#A LAMP stack is a bundle of four different software technologies that developers use to build websites and web applications. 
+kubectl get deploy
+kubectl describe deploy lamp-wp
+
+#will see portno is wrong
+kubectl get service
+
+#change port no
+kubectl edit service lamp-service
+
+change node port to 30008
+
+kubectl get configmap
+kubectl describe configmap <configmap-name> eg.php-config
+
+kubectl get deploy
+kubectl get pods
+kubectl describe pods <pod-name>
+
+kubectl get pods
+kubectl exec -it <pod-name> -c httpd-php-container -- sh
+ls
+cd app/
+ls
+cat index.php
+
+copy index.php
+exit
+vi index.php
+CHANGE MYSQL-Host to MYSQL_Host
+CHANGE MYSQL-PASSWORDS to MYSQL-PASSWORDS
+
+kubectl create configmap --help
+kubectl create configmap index --from-file=index.php
+
+
+kubectl get configmap
+#MYSQLHost was updated
+kubectl describe configmap index
+kubectl edit deployment lamp-wp
+
+below SubPath
+- mountPath: /app/index.php
+  name: index
+  subPath: index.php
+  
+below name: php-config-volume
+- configMap:
+	defaultMode: 420
+	name: index
+  name: index
+----------------
+kubectl get Pods
+
+#mount path was changed after editing
+kubectl describe pod <pod-name>
+
+#validate
+kubectl exec -it <pod-name> -c httpd-php-container -- sh
+ls
+cd app/
+ls
+cat index.php
+
+
+######################################## Kubernetes Level 3 - Task 1 - Deploy Apache Web Server on Kubernetes Cluster##########
+
+kubectl create namespace httpd-namespace-xfusion
+kubectl create deployment httpd-deployment-xfusion -n httpd-namespace-xfusion --image=httpd:latest --replicas=2
+kubectl get deployment
+
+kubectl get deploy -n httpd-namespace-xfusion
+
+kubectl get pod -n httpd-namespace-xfusion
+#This kubectl expose command creates a new service named httpd-service-xfusion in the httpd-namespace-xfusion namespace. It exposes the deployment named httpd-deployment-xfusion on port 80 using the NodePort type.
+#This means that the service will be accessible externally via a port on each Kubernetes node. The port number will be dynamically assigned unless you specify it. In this case, it's set to port 80.
+
+kubectl expose deployment httpd-deployment-xfusion -n httpd-namespace-xfusion --name=httpd-service-xfusion --type="NodePort" --port=80
+
+kubectl edit service httpd-service-xfusion -n httpd-namespace-xfusion
+
+kubectl get service httpd-service-xfusion -n httpd-namespace-xfusion
